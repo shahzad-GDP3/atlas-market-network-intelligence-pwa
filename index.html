@@ -60,7 +60,8 @@ iframe.transport{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 <div class="divider"></div><div class="muted">Lubricant category — select all that apply.</div><div id="segments" class="segmentGrid"></div>
 <label>Business / shop name<input id="businessName" placeholder="Shop name"></label>
 <label>Contact person <span class="optional">(optional)</span><input id="contactPerson" placeholder="Owner / manager"></label>
-<label>Mobile <span class="optional">(if known)</span><input id="mobile" inputmode="tel" placeholder="03xx..."></label>
+<label>Mobile <span class="optional">(required · main identity)</span><input id="mobile" inputmode="tel" autocomplete="tel" placeholder="0300 1234567"></label>
+<p id="mobileError" class="error"></p>
 <label>Market / area <span class="optional">(optional)</span><input id="marketArea" placeholder="Main Bazar"></label>
 <label>Also works as <span class="optional">(optional)</span><select id="secondaryType"><option value="">None</option></select></label>
 <p class="fieldHint">Outlet town aur full address GPS se automatically save hoga.</p>
@@ -92,7 +93,7 @@ iframe.transport{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 <script>
 const BACKEND='https://script.google.com/macros/s/AKfycby09MjKf1w5ZJtedZ_yfKc3gt3qp7AK9hGGEuSPQNPrxbWSJ_YXkZeUAfa0vq1YdYXS4A/exec';
 const PROFILE_KEY='atlas_mni_pwa_profile_v1';
-const APP_VERSION='0.11.1-PWA';
+const APP_VERSION='0.12.0-PWA';
 const categories=[['RETAILER','Retailer'],['MECHANIC','Mechanic'],['OIL_CHANGE_SHOP','Oil Change Shop'],['TRANSPORTER','Transporter'],['WHOLESALER','Wholesaler'],['DISTRIBUTOR','Distributor']];
 const brands=['Atlas','Total','Shell','Caltex','ZIC','Master','Servo','Other'];
 const segments=['PCMO','DEO','HYDRAULIC'];
@@ -116,7 +117,8 @@ function buildStatic(){
 }
 function bind(){
  $('saveProfile').onclick=saveProfile;$('profileBtn').onclick=()=>{if(confirm('Change saved field profile?'))showProfile()};
- $('back').onclick=()=>go(Math.max(1,state.step-1));$('next').onclick=()=>{if(validate(state.step))go(state.step+1)};$('submit').onclick=submitSurvey;$('gpsBtn').onclick=captureGps;
+ $('back').onclick=()=>go(Math.max(1,state.step-1));$('next').onclick=handleNext;$('submit').onclick=submitSurvey;$('gpsBtn').onclick=captureGps;
+ $('mobile').oninput=()=>{$('mobileError').textContent=''};
  $('photoBtn').onclick=()=>$('photoInput').click();$('photoInput').onchange=photoChange;$('removePhoto').onclick=clearPhoto;$('addNext').onclick=resetSurvey;
  window.addEventListener('message',e=>{const m=e.data;if(!m||m.channel!=='atlas-mni-v1'||!m.requestId)return;const p=state.pending.get(m.requestId);if(!p)return;clearTimeout(p.timer);state.pending.delete(m.requestId);m.ok?p.resolve(m):p.reject(new Error(m.error||'Submission failed.'))});
 }
@@ -161,8 +163,43 @@ function sourceCard(key,s,i,total){
 function go(n){
  state.step=n;document.querySelectorAll('.step').forEach(x=>x.classList.toggle('hidden',+x.dataset.step!==n));$('bar').style.width=(n*33.333)+'%';$('stepNo').textContent='Step '+n+' of 3';$('stepName').textContent=['Outlet','Brands & supply','GPS & submit'][n-1];$('back').style.visibility=n===1?'hidden':'visible';$('next').classList.toggle('hidden',n===3);$('submit').classList.toggle('hidden',n!==3);if(n===3){captureGps();renderReview()}window.scrollTo({top:0,behavior:'smooth'});
 }
+function normalizeMobile(v){
+ let d=String(v||'').replace(/\D/g,'');
+ if(/^00923\d{9}$/.test(d))d=d.slice(4);
+ if(/^923\d{9}$/.test(d))d=d.slice(2);
+ if(/^3\d{9}$/.test(d))d='0'+d;
+ return d;
+}
+async function handleNext(){
+ if(state.step!==1){if(validate(state.step))go(state.step+1);return}
+ if(!validate(1))return;
+ const mobile=normalizeMobile($('mobile').value);
+ $('mobile').value=mobile;
+ $('next').disabled=true;$('next').textContent='Checking…';
+ try{
+   const r=await postPayload({action:'checkMobile',requestId:uuid(),mobile});
+   if(r.exists){
+     const label=[r.businessName,r.city].filter(Boolean).join(' · ');
+     $('mobileError').textContent='This mobile is already registered'+(label?' for '+label:'')+'. Duplicate entry is not allowed.';
+     $('mobile').focus();
+     return;
+   }
+   go(2);
+ }catch(err){
+   $('mobileError').textContent=err.message||'Could not verify mobile number.';
+ }finally{
+   $('next').disabled=false;$('next').textContent='Continue';
+ }
+}
 function validate(n){
- if(n===1){if(!state.category){alert('Select business type.');return false}if(!state.segments.size){alert('Select PCMO, DEO or Hydraulic.');return false}if(!$('businessName').value.trim()){alert('Business / shop name is required.');return false}}
+ if(n===1){
+  $('mobileError').textContent='';
+  if(!state.category){alert('Select business type.');return false}
+  if(!state.segments.size){alert('Select PCMO, DEO or Hydraulic.');return false}
+  if(!$('businessName').value.trim()){alert('Business / shop name is required.');return false}
+  const mobile=normalizeMobile($('mobile').value);
+  if(!/^03\d{9}$/.test(mobile)){$('mobileError').textContent='Valid Pakistan mobile required, e.g. 03001234567.';$('mobile').focus();return false}
+ }
  if(n===2){
   $('brandError').textContent='';document.querySelectorAll('.sourceCard').forEach(c=>c.classList.remove('invalid'));document.querySelectorAll('[data-err]').forEach(e=>e.textContent='');
   if(!state.brands.size){$('brandError').textContent='Select at least one brand.';return false}
@@ -189,7 +226,7 @@ function renderReview(){
 }
 function submitSurvey(){
  if(!validate(1)||!validate(2))return;if(!state.location)return $('submitError').textContent='Capture GPS before submitting.';if(Date.now()-new Date(state.location.capturedAt).getTime()>10*60*1000)return $('submitError').textContent='GPS is older than 10 minutes. Capture again.';
- const payload={action:'submitSurvey',requestId:uuid(),profile:state.profile,businessSegments:Array.from(state.segments),outlet:{primaryCategory:state.category,secondaryActivity:$('secondaryType').value,businessName:$('businessName').value.trim(),contactPerson:$('contactPerson').value.trim(),mobile:$('mobile').value.trim(),alternateMobile:'',city:'',marketArea:$('marketArea').value.trim(),latitude:state.location.latitude,longitude:state.location.longitude,gpsAccuracyM:state.location.gpsAccuracyM,locationCapturedAt:state.location.capturedAt,notes:$('remarks').value.trim()},brands:Array.from(state.brands.values()).map(b=>({brandName:resolvedBrand(b),marketRole:b.marketRole||'',sources:(b.sources||[]).map(s=>({sourceType:s.sourceType,sourceName:s.sourceName.trim(),sourceCity:s.sourceCity.trim(),sourceTelecode:''}))})),photo:state.photo,appVersion:APP_VERSION,deviceLabel:navigator.userAgent.slice(0,220)};
+ const payload={action:'submitSurvey',requestId:uuid(),profile:state.profile,businessSegments:Array.from(state.segments),outlet:{primaryCategory:state.category,secondaryActivity:$('secondaryType').value,businessName:$('businessName').value.trim(),contactPerson:$('contactPerson').value.trim(),mobile:normalizeMobile($('mobile').value),alternateMobile:'',city:'',marketArea:$('marketArea').value.trim(),latitude:state.location.latitude,longitude:state.location.longitude,gpsAccuracyM:state.location.gpsAccuracyM,locationCapturedAt:state.location.capturedAt,notes:$('remarks').value.trim()},brands:Array.from(state.brands.values()).map(b=>({brandName:resolvedBrand(b),marketRole:b.marketRole||'',sources:(b.sources||[]).map(s=>({sourceType:s.sourceType,sourceName:s.sourceName.trim(),sourceCity:s.sourceCity.trim(),sourceTelecode:''}))})),photo:state.photo,appVersion:APP_VERSION,deviceLabel:navigator.userAgent.slice(0,220)};
  $('submitError').textContent='';$('submit').disabled=true;$('submit').textContent='Saving…';document.querySelector('#survey').classList.add('busy');
  postPayload(payload).then(r=>{document.querySelector('#survey').classList.remove('busy');$('submit').disabled=false;$('submit').textContent='Submit Survey';$('survey').classList.add('hidden');$('success').classList.remove('hidden');$('successText').textContent=r.message+(state.photo?(r.photoSaved?' Shop photo saved.':(' Survey saved; photo issue: '+(r.photoWarning||'not saved.'))):'')+' Survey ID: '+r.surveyId}).catch(err=>{document.querySelector('#survey').classList.remove('busy');$('submit').disabled=false;$('submit').textContent='Submit Survey';$('submitError').textContent=err.message||String(err)});
 }
