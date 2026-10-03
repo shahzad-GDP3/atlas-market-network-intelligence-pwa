@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#24247A">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Atlas Field Market Data</title>
+<style>
+:root{--navy:#24247A;--yellow:#FDBE12;--ink:#172033;--muted:#6B7280;--line:#D9DCE5;--bg:#F4F5F8;--ok:#027A48;--danger:#B42318}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink)}
+button,input,select,textarea{font:inherit}.app{max-width:560px;margin:0 auto;min-height:100dvh;background:var(--bg)}
+header{background:var(--navy);color:#fff;padding:calc(15px + env(safe-area-inset-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20}
+.brandSmall{font-size:10px;letter-spacing:.22em;font-weight:800}.brandTitle{font-size:18px;font-weight:900;margin-top:3px}
+.userBox{display:flex;align-items:center;gap:10px;min-width:0}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#E5E7EB;color:#111827;font-size:13px;font-weight:900;flex:0 0 auto}
+.userMeta{font-size:10px;line-height:1.35;white-space:nowrap}.userName{font-size:12px;font-weight:850}.editBtn{border:1px solid rgba(255,255,255,.38);background:transparent;color:#fff;border-radius:9px;padding:6px 8px;font-size:10px;font-weight:800}
+main{padding:0 0 94px}.profileStrip{background:#ECEEF4;border-bottom:1px solid #D7DAE3;padding:9px 18px;font-size:10px;letter-spacing:.06em;font-weight:700;color:#555D70}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);background:#F0F1F5;border-bottom:1px solid #D8DBE3}.stepTab{text-align:center;padding:17px 4px 12px;color:#6B7280;font-size:11px;font-weight:750;border-bottom:3px solid transparent}.stepTab .num{width:22px;height:22px;border-radius:50%;margin:0 auto 7px;display:grid;place-items:center;border:1px solid #B8BDC9;background:#fff;font-size:11px}.stepTab.active{color:var(--navy);border-color:var(--navy)}.stepTab.active .num{background:var(--navy);color:#fff;border-color:var(--navy)}.stepTab.done{color:var(--navy)}.stepTab.done .num{background:#E7E7FA;border-color:var(--navy)}
+.content{padding:28px 16px 18px}.hidden{display:none!important}h1{font-size:21px;margin:0 0 3px;text-align:center}p.sub{font-size:12px;color:var(--muted);text-align:center;margin:0 0 22px}
+.typeGrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.typeBtn{min-height:112px;border:1px solid #C8CCD6;border-radius:10px;background:#F7F7F9;color:#20263A;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;font-size:13px}.typeBtn .ico{font-size:30px;line-height:1}.typeBtn.selected{border:2px solid var(--navy);background:#EEEEF9;color:var(--navy);box-shadow:0 0 0 2px rgba(36,36,122,.06)}
+label{display:block;margin-top:18px;font-size:12px;font-weight:800}input,select,textarea{width:100%;margin-top:7px;border:1px solid #C8CCD6;border-radius:9px;background:#F8F8FA;min-height:48px;padding:12px 13px;font-size:16px;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(36,36,122,.08);background:#fff}.req{color:#D92D20}.hint{font-size:11px;color:#7A8190;margin-top:6px;line-height:1.4}.error{font-size:12px;color:var(--danger);font-weight:700;margin-top:7px;min-height:0}.error:not(:empty){padding:8px 10px;border-radius:8px;background:#FEF3F2;border:1px solid #FECDCA}
+.segmentGrid,.brandGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.segBtn,.brandBtn{min-height:58px;border:1px solid #C8CCD6;border-radius:10px;background:#fff;color:#30384A;font-weight:850}.segBtn.selected,.brandBtn.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
+.brandCard{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px}.brandHead{font-weight:900;font-size:15px}.sourceCard{margin-top:12px;background:#F7F8FA;border:1px solid #E1E4EA;border-radius:10px;padding:11px}.sourceCard.invalid{border-color:#F04438;box-shadow:0 0 0 2px rgba(240,68,56,.08)}
+.sourceTitle{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:850}.remove{border:0;background:transparent;color:var(--danger);font-size:11px;font-weight:800}.sourceTypes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.sourceType{min-height:42px;border:1px solid #C9CDD7;border-radius:8px;background:#fff;font-size:11px;font-weight:800}.sourceType.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
+.metricGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.addSupplier{width:100%;margin-top:10px;min-height:42px;border:1px dashed #A8AEBC;background:#fff;border-radius:9px;color:var(--navy);font-weight:850}
+.locationBox{border:1px solid var(--line);background:#fff;border-radius:11px;padding:13px;display:flex;gap:10px;align-items:center;justify-content:space-between}.gpsMain{font-size:13px;font-weight:850}.gpsMeta{font-size:11px;color:var(--muted);margin-top:3px}
+.ghost,.primary{min-height:48px;border-radius:9px;font-weight:900;padding:11px 14px}.primary{border:1px solid var(--navy);background:var(--navy);color:#fff}.ghost{border:1px solid #C8CCD6;background:#fff;color:var(--navy)}.primary:disabled{opacity:.55}
+.cameraBtn{width:100%;min-height:56px;margin-top:16px;border:1.5px dashed var(--navy);border-radius:10px;background:#F0F0FB;color:var(--navy);font-weight:900}.photo{width:100%;max-height:270px;object-fit:cover;border-radius:10px;margin-top:10px;border:1px solid var(--line)}.photoStatus{font-size:11px;margin-top:7px;font-weight:700}
+.review{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;font-size:12px;line-height:1.55}.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:560px;background:rgba(255,255,255,.98);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:30}.bottom button{flex:1}
+.busy{opacity:.62;pointer-events:none}.success{padding:50px 24px;text-align:center}.tick{width:62px;height:62px;border-radius:50%;background:#ECFDF3;color:var(--ok);display:grid;place-items:center;font-size:34px;font-weight:900;margin:0 auto 12px}.success h2{margin:0 0 8px}.success p{font-size:13px;color:var(--muted);line-height:1.5}.profileCard{padding:26px 18px}.profileCard h2{text-align:center;margin:0}.profileCard .sub{text-align:center}.full{width:100%}.optional{font-size:10px;color:#8B93A3;font-weight:500}
+.inlineNote{margin:12px 0 0;padding:10px 12px;border-radius:9px;background:#FFF8E1;border:1px solid #FDE68A;font-size:11px;color:#725300;line-height:1.45}
+@media(max-width:370px){.typeGrid,.segmentGrid,.brandGrid,.metricGrid{grid-template-columns:1fr}.userMeta{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div><div class="brandSmall">ATLAS LUBRICANTS</div><div class="brandTitle">FIELD MARKET DATA</div></div>
+  <div id="userBox" class="userBox hidden">
+    <div id="avatar" class="avatar">U</div>
+    <div class="userMeta"><div id="headName" class="userName"></div><div id="headCode"></div></div>
+    <button id="editProfile" class="editBtn" type="button">Edit</button>
+    <div class="userMeta"><div>v0.18.0-PWA</div><div>Secured</div></div>
+  </div>
+</header>
+<div id="profileStrip" class="profileStrip hidden"></div>
+<div id="steps" class="steps hidden">
+  <div class="stepTab active" data-tab="1"><div class="num">1</div>Business</div>
+  <div class="stepTab" data-tab="2"><div class="num">2</div>Segments</div>
+  <div class="stepTab" data-tab="3"><div class="num">3</div>Brands</div>
+  <div class="stepTab" data-tab="4"><div class="num">4</div>Location</div>
+</div>
+<main>
+<section id="profileCard" class="profileCard">
+  <h2>Field profile</h2><p class="sub">Sirf pehli dafa. Profile is device par remember rahegi.</p>
+  <label>Full name <span class="req">*</span><input id="pName" autocomplete="name"></label>
+  <label>Email <span class="req">*</span><input id="pEmail" inputmode="email"></label>
+  <label>Atlas distributor name <span class="req">*</span><input id="pDist"></label>
+  <label>Atlas distributor code <span class="req">*</span><input id="pCode"></label>
+  <label>Region <span class="req">*</span><input id="pRegion"></label>
+  <label>Territory <span class="req">*</span><input id="pTerritory"></label>
+  <p id="profileError" class="error"></p>
+  <button id="saveProfile" class="primary full" type="button">Save & Start</button>
+</section>
+
+<section id="survey" class="hidden">
+<div class="content">
+<section class="formStep" data-step="1">
+  <h1>Select business type</h1><p class="sub">What best describes this market point?</p>
+  <div id="businessTypes" class="typeGrid"></div>
+  <p id="businessTypeError" class="error"></p>
+
+  <label>Business / shop name <span class="req">*</span><input id="businessName" autocomplete="organization" placeholder="Business name"></label>
+  <p id="businessNameError" class="error"></p>
+
+  <label>Mobile number <span class="req">*</span><input id="mobile" inputmode="tel" autocomplete="tel" placeholder="0300 0000000"></label>
+  <div class="hint">Required for business point identification and duplicate protection.</div>
+  <p id="mobileError" class="error"></p>
+
+  <label>Full name <span class="optional">(optional)</span><input id="contactPerson" placeholder="Owner / contact person"></label>
+  <label>Also works as <span class="optional">(optional)</span><select id="secondaryType"></select></label>
+  <div class="inlineNote">Continue tabhi chalega jab business type, shop name aur valid mobile complete hon.</div>
+</section>
+
+<section class="formStep hidden" data-step="2">
+  <h1>Lubricant segments</h1><p class="sub">Select all segments that apply.</p>
+  <div id="segments" class="segmentGrid"></div>
+  <p id="segmentError" class="error"></p>
+  <label>Market / area <span class="optional">(optional)</span><input id="marketArea" placeholder="Main Bazar / Market"></label>
+</section>
+
+<section class="formStep hidden" data-step="3">
+  <h1>Brands & supply</h1><p class="sub">Select brands, then add source details and monthly average.</p>
+  <div id="brandChips" class="brandGrid"></div>
+  <p id="brandError" class="error"></p>
+  <div id="brandDetails"></div>
+</section>
+
+<section class="formStep hidden" data-step="4">
+  <h1>Location & photo</h1><p class="sub">Capture fresh GPS and shop photo before submit.</p>
+  <div class="locationBox">
+    <div><div id="gpsStatus" class="gpsMain">Location not captured</div><div id="gpsMeta" class="gpsMeta"></div></div>
+    <button id="gpsBtn" class="ghost" type="button">Get GPS</button>
+  </div>
+  <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+  <button id="photoBtn" class="cameraBtn" type="button">📷 Take Shop Photo</button>
+  <img id="photoPreview" class="photo hidden" alt="Shop photo preview">
+  <div id="photoStatus" class="photoStatus"></div>
+  <button id="removePhoto" class="ghost full hidden" type="button">Retake / Remove Photo</button>
+  <label>Remarks <span class="optional">(optional)</span><textarea id="remarks" rows="3"></textarea></label>
+  <div id="review" class="review"></div>
+  <p id="submitError" class="error"></p>
+</section>
+</div>
+<div class="bottom">
+  <button id="back" class="ghost" type="button">Back</button>
+  <button id="next" class="primary" type="button">Continue</button>
+  <button id="submit" class="primary hidden" type="button">Submit Survey</button>
+</div>
+</section>
+
+<section id="success" class="success hidden">
+  <div class="tick">✓</div><h2>Survey saved</h2><p id="successText"></p>
+  <button id="addNext" class="primary full" type="button">Add Next Market Point</button>
+</section>
+</main>
+</div>
+
+<iframe id="backendFrame" name="backendFrame" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0" credentialless referrerpolicy="no-referrer"></iframe>
+
+<script>
+const BACKEND='https://script.google.com/macros/s/AKfycby09MjKf1w5ZJtedZ_yfKc3gt3qp7AK9hGGEuSPQNPrxbWSJ_YXkZeUAfa0vq1YdYXS4A/exec';
+const PROFILE_KEY='atlas_mni_pwa_profile_v1';
+const APP_VERSION='0.18.0-PWA';
+const categories=[['RETAILER','Retailer','🏪'],['MECHANIC','Mechanic','🔧'],['OIL_CHANGE_SHOP','Oil Change Shop','🛠️'],['TRANSPORTER','Transporter','🚛'],['WHOLESALER','Wholesaler','📦'],['DISTRIBUTOR','Distributor','🚚']];
+const segments=['PCMO','DEO','HYDRAULIC'];
+const brands=['Atlas','Total','Shell','Caltex','ZIC','Master','Servo','Other'];
+const blankSource=()=>({sourceType:'',sourceName:'',sourceCity:'',sourceMobile:'',sourceTelecode:'',sourceId:''});
+const state={profile:null,step:1,category:'',segments:new Set(),brands:new Map(),location:null,photo:null,pending:new Map(),verifiedMobile:''};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uuid=()=>crypto.randomUUID?crypto.randomUUID():'r-'+Date.now()+'-'+Math.random().toString(16).slice(2);
+
+document.addEventListener('DOMContentLoaded',()=>{
+  buildStatic();
+  bind();
+  const p=localStorage.getItem(PROFILE_KEY);
+  if(p){try{state.profile=JSON.parse(p);showSurvey()}catch(_){showProfile()}}
+});
+
+function buildStatic(){
+  $('businessTypes').innerHTML=categories.map(([v,l,i])=>'<button type="button" class="typeBtn" data-cat="'+v+'"><span class="ico">'+i+'</span><span>'+l+'</span></button>').join('');
+  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>selectCategory(b.dataset.cat));
+
+  $('segments').innerHTML=segments.map(s=>'<button type="button" class="segBtn" data-seg="'+s+'">'+(s==='HYDRAULIC'?'Hydraulic':s)+'</button>').join('');
+  document.querySelectorAll('[data-seg]').forEach(b=>b.onclick=()=>{
+    state.segments.has(b.dataset.seg)?state.segments.delete(b.dataset.seg):state.segments.add(b.dataset.seg);
+    b.classList.toggle('selected',state.segments.has(b.dataset.seg));
+    $('segmentError').textContent='';
+  });
+
+  $('secondaryType').innerHTML='<option value="">None</option>'+categories.map(([v,l])=>'<option value="'+v+'">'+l+'</option>').join('');
+
+  $('brandChips').innerHTML=brands.map(b=>'<button type="button" class="brandBtn" data-brand="'+b+'">'+b+'</button>').join('');
+  document.querySelectorAll('[data-brand]').forEach(b=>b.onclick=()=>toggleBrand(b.dataset.brand,b));
+}
+
+function bind(){
+  $('saveProfile').onclick=saveProfile;
+  $('editProfile').onclick=()=>{if(confirm('Change saved field profile?'))showProfile()};
+  $('back').onclick=()=>go(Math.max(1,state.step-1));
+  $('next').onclick=handleNext;
+  $('submit').onclick=submitSurvey;
+  $('gpsBtn').onclick=captureGps;
+
+  $('businessName').oninput=()=>{$('businessNameError').textContent=''};
+  $('mobile').oninput=()=>{
+    $('mobileError').textContent='';
+    state.verifiedMobile='';
+  };
+
+  $('photoBtn').onclick=()=>$('photoInput').click();
+  $('photoInput').onchange=photoChange;
+  $('removePhoto').onclick=clearPhoto;
+  $('addNext').onclick=resetSurvey;
+
+  window.addEventListener('message',e=>{
+    const m=e.data;
+    if(!m||m.channel!=='atlas-mni-v1'||!m.requestId)return;
+    const p=state.pending.get(m.requestId);
+    if(!p)return;
+    clearTimeout(p.timer);
+    state.pending.delete(m.requestId);
+    m.ok?p.resolve(m):p.reject(new Error(m.error||'Submission failed.'));
+  });
+}
+
+function saveProfile(){
+  const p={
+    memberName:$('pName').value.trim(),
+    email:$('pEmail').value.trim().toLowerCase(),
+    distributorName:$('pDist').value.trim(),
+    distributorCode:$('pCode').value.trim(),
+    region:$('pRegion').value.trim(),
+    territory:$('pTerritory').value.trim()
+  };
+  if(Object.values(p).some(v=>!v))return $('profileError').textContent='All profile fields are required.';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email))return $('profileError').textContent='Enter a valid email.';
+  state.profile=p;
+  localStorage.setItem(PROFILE_KEY,JSON.stringify(p));
+  $('profileError').textContent='';
+  showSurvey();
+}
+
+function initials(n){return String(n||'U').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'U'}
+
+function showProfile(){
+  $('profileCard').classList.remove('hidden');
+  $('survey').classList.add('hidden');
+  $('success').classList.add('hidden');
+  $('steps').classList.add('hidden');
+  $('profileStrip').classList.add('hidden');
+  $('userBox').classList.add('hidden');
+  const p=state.profile||{};
+  $('pName').value=p.memberName||'';
+  $('pEmail').value=p.email||'';
+  $('pDist').value=p.distributorName||'';
+  $('pCode').value=p.distributorCode||'';
+  $('pRegion').value=p.region||'';
+  $('pTerritory').value=p.territory||'';
+}
+
+function showSurvey(){
+  $('profileCard').classList.add('hidden');
+  $('success').classList.add('hidden');
+  $('survey').classList.remove('hidden');
+  $('steps').classList.remove('hidden');
+  $('profileStrip').classList.remove('hidden');
+  $('userBox').classList.remove('hidden');
+  $('avatar').textContent=initials(state.profile.memberName);
+  $('headName').textContent=state.profile.memberName;
+  $('headCode').textContent=state.profile.distributorCode;
+  $('profileStrip').textContent=state.profile.distributorName+' • '+state.profile.region+' • '+state.profile.territory;
+  go(1);
+}
+
+function isTradeCategory(c){return c==='DISTRIBUTOR'||c==='WHOLESALER'}
+
+function selectCategory(c){
+  const changed=state.category&&state.category!==c;
+  state.category=c;
+  $('businessTypeError').textContent='';
+  document.querySelectorAll('[data-cat]').forEach(b=>b.classList.toggle('selected',b.dataset.cat===c));
+
+  if(changed&&state.brands.size){
+    const trade=isTradeCategory(c);
+    for(const b of state.brands.values()){
+      b.marketRole=trade?c:'';
+      if(trade)b.sources=[];
+      else if(!Array.isArray(b.sources)||!b.sources.length)b.sources=[blankSource()];
+    }
+  }
+  renderBrands();
+
+  window.setTimeout(()=>{
+    if(!$('businessName').value.trim()){
+      $('businessName').scrollIntoView({behavior:'smooth',block:'center'});
+      $('businessName').focus();
+    }
+  },120);
+}
+
+function toggleBrand(name,btn){
+  if(state.brands.has(name))state.brands.delete(name);
+  else state.brands.set(name,{
+    brandName:name,
+    customBrandName:'',
+    marketRole:isTradeCategory(state.category)?state.category:'',
+    avgRetailSale:'',
+    avgConsumption:'',
+    sources:isTradeCategory(state.category)?[]:[blankSource()]
+  });
+  btn.classList.toggle('selected',state.brands.has(name));
+  $('brandError').textContent='';
+  renderBrands();
+}
+
+function resolvedBrand(b){return b.brandName==='Other'?(b.customBrandName||'').trim():b.brandName}
+
+function metricFields(key,b){
+  return '<div class="metricGrid">'+
+    '<label>Avg Retail Sale / month<input type="number" min="0" step="0.1" inputmode="decimal" data-metric="avgRetailSale" data-mbrand="'+key+'" value="'+esc(b.avgRetailSale||'')+'"></label>'+
+    '<label>Avg Consumption / month<input type="number" min="0" step="0.1" inputmode="decimal" data-metric="avgConsumption" data-mbrand="'+key+'" value="'+esc(b.avgConsumption||'')+'"></label>'+
+    '</div><p class="error" data-metric-error="'+key+'"></p>';
+}
+
+function sourceCard(key,s,i,total){
+  const btn=t=>'<button type="button" class="sourceType '+(s.sourceType===t?'selected':'')+'" data-stype="'+t+'" data-sbrand="'+key+'" data-idx="'+i+'">'+(t==='DISTRIBUTOR'?'Distributor':t==='WHOLESALER'?'Wholesaler':'Retailer')+'</button>';
+  return '<div class="sourceCard" data-card="'+key+'-'+i+'">'+
+    '<div class="sourceTitle"><span>'+(total>1?'Supplier '+(i+1):'Source of this brand')+'</span>'+(total>1?'<button type="button" class="remove" data-remove="'+i+'" data-sbrand="'+key+'">Remove</button>':'')+'</div>'+
+    '<div class="sourceTypes">'+btn('DISTRIBUTOR')+btn('WHOLESALER')+btn('RETAILER')+'</div>'+
+    '<label>Supplier name <span class="req">*</span><input data-sfield="sourceName" data-sbrand="'+key+'" data-idx="'+i+'" value="'+esc(s.sourceName)+'"></label>'+
+    '<label>Supplier mobile <span class="optional">(optional)</span><input inputmode="tel" data-sfield="sourceMobile" data-sbrand="'+key+'" data-idx="'+i+'" value="'+esc(s.sourceMobile||'')+'"></label>'+
+    '<label>Town / city <span class="req">*</span><input data-sfield="sourceCity" data-sbrand="'+key+'" data-idx="'+i+'" value="'+esc(s.sourceCity)+'"></label>'+
+    '<p class="error" data-err="'+key+'-'+i+'"></p></div>';
+}
+
+function renderBrands(){
+  const trade=isTradeCategory(state.category);
+  $('brandDetails').innerHTML=Array.from(state.brands.entries()).map(([key,b])=>{
+    const other=b.brandName==='Other'?'<label>Other brand name <span class="req">*</span><input data-other="'+key+'" value="'+esc(b.customBrandName)+'"></label>':'';
+    if(trade)return '<div class="brandCard"><div class="brandHead">'+esc(resolvedBrand(b)||b.brandName)+'</div>'+other+metricFields(key,b)+'</div>';
+    if(!Array.isArray(b.sources)||!b.sources.length)b.sources=[blankSource()];
+    return '<div class="brandCard"><div class="brandHead">'+esc(resolvedBrand(b)||b.brandName)+'</div>'+other+
+      b.sources.map((s,i)=>sourceCard(key,s,i,b.sources.length)).join('')+
+      metricFields(key,b)+'<button class="addSupplier" type="button" data-add="'+key+'">+ Add another supplier</button></div>';
+  }).join('');
+
+  document.querySelectorAll('[data-other]').forEach(el=>el.oninput=()=>state.brands.get(el.dataset.other).customBrandName=el.value);
+  document.querySelectorAll('[data-stype]').forEach(el=>el.onclick=()=>{
+    state.brands.get(el.dataset.sbrand).sources[+el.dataset.idx].sourceType=el.dataset.stype;
+    renderBrands();
+  });
+  document.querySelectorAll('[data-sfield]').forEach(el=>el.oninput=()=>{
+    state.brands.get(el.dataset.sbrand).sources[+el.dataset.idx][el.dataset.sfield]=el.value;
+    const er=document.querySelector('[data-err="'+el.dataset.sbrand+'-'+el.dataset.idx+'"]');
+    if(er)er.textContent='';
+    const card=document.querySelector('[data-card="'+el.dataset.sbrand+'-'+el.dataset.idx+'"]');
+    if(card)card.classList.remove('invalid');
+  });
+  document.querySelectorAll('[data-metric]').forEach(el=>el.oninput=()=>{
+    state.brands.get(el.dataset.mbrand)[el.dataset.metric]=el.value;
+    const e=document.querySelector('[data-metric-error="'+el.dataset.mbrand+'"]');
+    if(e)e.textContent='';
+  });
+  document.querySelectorAll('[data-add]').forEach(el=>el.onclick=()=>{
+    state.brands.get(el.dataset.add).sources.push(blankSource());
+    renderBrands();
+  });
+  document.querySelectorAll('[data-remove]').forEach(el=>el.onclick=()=>{
+    const b=state.brands.get(el.dataset.sbrand);
+    b.sources.splice(+el.dataset.remove,1);
+    if(!b.sources.length)b.sources=[blankSource()];
+    renderBrands();
+  });
+}
+
+function go(n){
+  state.step=n;
+  document.querySelectorAll('.formStep').forEach(x=>x.classList.toggle('hidden',+x.dataset.step!==n));
+  document.querySelectorAll('.stepTab').forEach(t=>{
+    const x=+t.dataset.tab;
+    t.classList.toggle('active',x===n);
+    t.classList.toggle('done',x<n);
+  });
+  $('back').style.visibility=n===1?'hidden':'visible';
+  $('next').classList.toggle('hidden',n===4);
+  $('submit').classList.toggle('hidden',n!==4);
+  if(n===4){if(!state.location)captureGps();renderReview()}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function normalizeMobile(v){
+  let d=String(v||'').replace(/\D/g,'');
+  if(/^00923\d{9}$/.test(d))d=d.slice(4);
+  if(/^923\d{9}$/.test(d))d=d.slice(2);
+  if(/^3\d{9}$/.test(d))d='0'+d;
+  return d;
+}
+
+function reveal(el){
+  if(!el)return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  if(typeof el.focus==='function')window.setTimeout(()=>el.focus(),180);
+}
+
+function errorAt(errorId,message,target){
+  const box=$(errorId);
+  if(box)box.textContent=message;
+  reveal(typeof target==='string'?$(target):target);
+  return false;
+}
+
+async function checkMobileUnique(mobile){
+  const r=await postPayload({action:'checkMobile',requestId:uuid(),mobile});
+  if(r.exists){
+    const label=[r.businessName,r.city].filter(Boolean).join(' · ');
+    throw new Error('This mobile is already registered'+(label?' for '+label:'')+'. Duplicate entry is not allowed.');
+  }
+  state.verifiedMobile=mobile;
+  return true;
+}
+
+async function handleNext(){
+  if(state.step===1){
+    if(!validate(1))return;
+    const mobile=normalizeMobile($('mobile').value);
+    $('mobile').value=mobile;
+    $('next').disabled=true;
+    $('next').textContent='Checking…';
+    try{
+      await checkMobileUnique(mobile);
+      go(2);
+    }catch(err){
+      $('mobileError').textContent=err.message||'Could not verify mobile number.';
+      reveal($('mobile'));
+    }finally{
+      $('next').disabled=false;
+      $('next').textContent='Continue';
+    }
+    return;
+  }
+  if(validate(state.step))go(state.step+1);
+}
+
+function validate(n){
+  if(n===1){
+    $('businessTypeError').textContent='';
+    $('businessNameError').textContent='';
+    $('mobileError').textContent='';
+
+    if(!state.category)return errorAt('businessTypeError','Select a business type before continuing.',$('businessTypes'));
+    if(!$('businessName').value.trim())return errorAt('businessNameError','Business / shop name is required.','businessName');
+
+    const m=normalizeMobile($('mobile').value);
+    if(!/^03\d{9}$/.test(m))return errorAt('mobileError','Valid Pakistan mobile required, e.g. 03001234567.','mobile');
+  }
+
+  if(n===2){
+    $('segmentError').textContent='';
+    if(!state.segments.size)return errorAt('segmentError','Select at least one segment.',$('segments'));
+  }
+
+  if(n===3){
+    $('brandError').textContent='';
+    document.querySelectorAll('.sourceCard').forEach(c=>c.classList.remove('invalid'));
+    document.querySelectorAll('[data-err]').forEach(e=>e.textContent='');
+    document.querySelectorAll('[data-metric-error]').forEach(e=>e.textContent='');
+
+    if(!state.brands.size)return errorAt('brandError','Select at least one brand.',$('brandChips'));
+
+    for(const [key,b] of state.brands){
+      if(b.brandName==='Other'&&!resolvedBrand(b)){
+        const other=document.querySelector('[data-other="'+key+'"]');
+        return errorAt('brandError','Enter the Other brand name.',other||$('brandChips'));
+      }
+
+      const retail=String(b.avgRetailSale||'').trim();
+      const cons=String(b.avgConsumption||'').trim();
+      const me=document.querySelector('[data-metric-error="'+key+'"]');
+      const metricTarget=document.querySelector('[data-mbrand="'+key+'"]');
+
+      if(!retail&&!cons){if(me)me.textContent='Enter Avg Retail Sale or Avg Consumption.';reveal(metricTarget);return false}
+      if(retail&&(!Number.isFinite(Number(retail))||Number(retail)<=0)){if(me)me.textContent='Avg Retail Sale must be greater than 0.';reveal(metricTarget);return false}
+      if(cons&&(!Number.isFinite(Number(cons))||Number(cons)<=0)){if(me)me.textContent='Avg Consumption must be greater than 0.';reveal(metricTarget);return false}
+
+      if(!isTradeCategory(state.category)){
+        if(!Array.isArray(b.sources)||!b.sources.length)b.sources=[blankSource()];
+        for(let i=0;i<b.sources.length;i++){
+          const s=b.sources[i],miss=[];
+          if(!s.sourceType)miss.push('source type');
+          if(!String(s.sourceName||'').trim())miss.push('supplier name');
+          if(!String(s.sourceCity||'').trim())miss.push('town / city');
+          if(miss.length){
+            const e=document.querySelector('[data-err="'+key+'-'+i+'"]');
+            const card=document.querySelector('[data-card="'+key+'-'+i+'"]');
+            if(e)e.textContent='Complete: '+miss.join(', ')+'.';
+            if(card)card.classList.add('invalid');
+            reveal(card||e);
+            return false;
+          }
+        }
+      }
+    }
+  }
+  return true;
+}
+
+function captureGps(){
+  $('gpsStatus').textContent='Capturing location…';
+  $('gpsStatus').style.color='';
+  $('gpsMeta').textContent='';
+  if(!navigator.geolocation){$('gpsStatus').textContent='Location not supported';return}
+  navigator.geolocation.getCurrentPosition(
+    p=>{
+      state.location={latitude:p.coords.latitude,longitude:p.coords.longitude,gpsAccuracyM:p.coords.accuracy,capturedAt:new Date().toISOString()};
+      $('gpsStatus').textContent=p.coords.accuracy<=60?'GPS captured':'GPS captured · low accuracy';
+      $('gpsStatus').style.color=p.coords.accuracy<=60?'#027A48':'#B54708';
+      $('gpsMeta').textContent=p.coords.latitude.toFixed(6)+', '+p.coords.longitude.toFixed(6)+' · ±'+Math.round(p.coords.accuracy)+' m';
+      $('submitError').textContent='';
+      renderReview();
+    },
+    e=>{
+      state.location=null;
+      $('gpsStatus').textContent='Location required';
+      $('gpsStatus').style.color='#B42318';
+      $('gpsMeta').textContent=e.message||'Allow location permission.';
+      renderReview();
+    },
+    {enableHighAccuracy:true,timeout:18000,maximumAge:0}
+  );
+}
+
+async function photoChange(e){
+  const f=e.target.files&&e.target.files[0];
+  if(!f)return;
+  try{
+    state.photo=await compressPhoto(f);
+    $('photoPreview').src='data:'+state.photo.mimeType+';base64,'+state.photo.base64;
+    $('photoPreview').classList.remove('hidden');
+    $('removePhoto').classList.remove('hidden');
+    $('photoStatus').textContent='Photo ready · '+Math.round(state.photo.size/1024)+' KB';
+    $('photoStatus').style.color='#027A48';
+    $('submitError').textContent='';
+    renderReview();
+  }catch(err){
+    state.photo=null;
+    $('photoStatus').textContent=err.message;
+    $('photoStatus').style.color='#B42318';
+  }
+}
+
+function compressPhoto(file){
+  return new Promise((res,rej)=>{
+    const rd=new FileReader();
+    rd.onerror=()=>rej(new Error('Photo could not be read. Please retake.'));
+    rd.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error('Photo could not be opened. Please retake.'));
+      img.onload=()=>{
+        const max=720,sc=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(img.width*sc));
+        c.height=Math.max(1,Math.round(img.height*sc));
+        const ctx=c.getContext('2d');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(img,0,0,c.width,c.height);
+        const d=c.toDataURL('image/jpeg',.58),b=d.split(',')[1]||'',size=Math.floor(b.length*3/4);
+        if(!b)return rej(new Error('Photo encoding failed. Please retake.'));
+        if(size>700000)return rej(new Error('Photo is too large. Please retake.'));
+        res({base64:b,mimeType:'image/jpeg',capturedAt:new Date().toISOString(),size});
+      };
+      img.src=rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+
+function clearPhoto(){
+  state.photo=null;
+  $('photoInput').value='';
+  $('photoPreview').classList.add('hidden');
+  $('removePhoto').classList.add('hidden');
+  $('photoStatus').textContent='Photo required before submit.';
+  $('photoStatus').style.color='#B42318';
+  renderReview();
+}
+
+function renderReview(){
+  const names=Array.from(state.brands.values()).map(resolvedBrand).filter(Boolean);
+  $('review').innerHTML=
+    '<strong>'+esc($('businessName').value||'Market point')+'</strong><br>'+
+    esc(state.category||'')+' · '+esc(Array.from(state.segments).join(' + '))+'<br>'+
+    'Mobile: '+esc(normalizeMobile($('mobile').value)||'Pending')+'<br>'+
+    names.length+' brand(s): '+esc(names.join(', '))+'<br>'+
+    (state.location?'GPS '+state.location.latitude.toFixed(6)+', '+state.location.longitude.toFixed(6)+' · ±'+Math.round(state.location.gpsAccuracyM)+' m<br>':'GPS pending<br>')+
+    (state.photo?'Shop photo attached':'Shop photo required');
+}
+
+async function submitSurvey(){
+  $('submitError').textContent='';
+
+  for(const n of [1,2,3]){
+    if(!validate(n)){go(n);return}
+  }
+
+  const mobile=normalizeMobile($('mobile').value);
+  if(state.verifiedMobile!==mobile){
+    go(1);
+    $('mobileError').textContent='Mobile must be re-checked before submit. Tap Continue after confirming this number.';
+    reveal($('mobile'));
+    return;
+  }
+
+  if(!state.location){
+    $('submitError').textContent='Capture GPS before submitting.';
+    reveal($('gpsBtn'));
+    return;
+  }
+  if(Date.now()-new Date(state.location.capturedAt).getTime()>10*60*1000){
+    $('submitError').textContent='GPS is older than 10 minutes. Capture again.';
+    reveal($('gpsBtn'));
+    return;
+  }
+  if(!state.photo){
+    $('submitError').textContent='Take a shop photo before submitting.';
+    $('photoStatus').textContent='Photo required before submit.';
+    $('photoStatus').style.color='#B42318';
+    reveal($('photoBtn'));
+    return;
+  }
+
+  const payload={
+    action:'submitSurvey',
+    requestId:uuid(),
+    profile:state.profile,
+    businessSegments:Array.from(state.segments),
+    outlet:{
+      primaryCategory:state.category,
+      secondaryActivity:$('secondaryType').value,
+      businessName:$('businessName').value.trim(),
+      contactPerson:$('contactPerson').value.trim(),
+      mobile,
+      alternateMobile:'',
+      city:'',
+      marketArea:$('marketArea').value.trim(),
+      latitude:state.location.latitude,
+      longitude:state.location.longitude,
+      gpsAccuracyM:state.location.gpsAccuracyM,
+      locationCapturedAt:state.location.capturedAt,
+      notes:$('remarks').value.trim()
+    },
+    brands:Array.from(state.brands.values()).map(b=>({
+      brandName:resolvedBrand(b),
+      marketRole:b.marketRole||'',
+      avgRetailSale:String(b.avgRetailSale||'').trim(),
+      avgConsumption:String(b.avgConsumption||'').trim(),
+      sources:(b.sources||[]).map(s=>({
+        sourceType:s.sourceType,
+        sourceName:String(s.sourceName||'').trim(),
+        sourceCity:String(s.sourceCity||'').trim(),
+        sourceMobile:normalizeMobile(s.sourceMobile||''),
+        sourceTelecode:s.sourceTelecode||'',
+        sourceId:s.sourceId||''
+      }))
+    })),
+    photo:state.photo,
+    appVersion:APP_VERSION,
+    deviceLabel:navigator.userAgent.slice(0,220)
+  };
+
+  $('submit').disabled=true;
+  $('submit').textContent='Saving…';
+  $('survey').classList.add('busy');
+
+  try{
+    const r=await postPayload(payload);
+    if(state.photo&&!r.photoSaved)throw new Error('Survey response did not confirm the shop photo was saved. Please retry only after checking the sheet.');
+    $('survey').classList.add('hidden');
+    $('steps').classList.add('hidden');
+    $('profileStrip').classList.add('hidden');
+    $('success').classList.remove('hidden');
+    $('successText').textContent=(r.message||'Survey saved.')+' Shop photo saved. Survey ID: '+(r.surveyId||'');
+  }catch(err){
+    $('submitError').textContent=err.message||String(err);
+  }finally{
+    $('survey').classList.remove('busy');
+    $('submit').disabled=false;
+    $('submit').textContent='Submit Survey';
+  }
+}
+
+function postPayload(payload){
+  return new Promise((resolve,reject)=>{
+    const id=payload.requestId;
+    const timer=setTimeout(()=>{
+      state.pending.delete(id);
+      reject(new Error('Network timeout. Please check internet and try again.'));
+    },45000);
+    state.pending.set(id,{resolve,reject,timer});
+    const f=document.createElement('form');
+    f.method='POST';
+    f.action=BACKEND;
+    f.target='backendFrame';
+    f.style.display='none';
+    const i=document.createElement('input');
+    i.type='hidden';
+    i.name='payload';
+    i.value=JSON.stringify(payload);
+    f.appendChild(i);
+    document.body.appendChild(f);
+    f.submit();
+    setTimeout(()=>f.remove(),1500);
+  });
+}
+
+function resetSurvey(){
+  state.step=1;
+  state.category='';
+  state.segments=new Set();
+  state.brands=new Map();
+  state.location=null;
+  state.photo=null;
+  state.verifiedMobile='';
+
+  document.querySelectorAll('#survey input,#survey textarea').forEach(el=>el.value='');
+  $('secondaryType').value='';
+  document.querySelectorAll('.typeBtn,.segBtn,.brandBtn').forEach(x=>x.classList.remove('selected'));
+  document.querySelectorAll('.error').forEach(x=>x.textContent='');
+  $('brandDetails').innerHTML='';
+  $('photoPreview').classList.add('hidden');
+  $('removePhoto').classList.add('hidden');
+  $('photoStatus').textContent='';
+  $('gpsStatus').textContent='Location not captured';
+  $('gpsStatus').style.color='';
+  $('gpsMeta').textContent='';
+  $('success').classList.add('hidden');
+  $('survey').classList.remove('hidden');
+  $('steps').classList.remove('hidden');
+  $('profileStrip').classList.remove('hidden');
+  go(1);
+}
+</script>
+</body>
+</html>
