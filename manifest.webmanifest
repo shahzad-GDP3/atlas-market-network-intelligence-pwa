@@ -2,7 +2,7 @@
   "name": "Atlas Field Market Data",
   "short_name": "Atlas Field",
   "description": "Atlas field market network survey app",
-  "start_url": "./field-app-v019.html?v=0190",
+  "start_url": "./field-app-v020.html?v=0200",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F4F5F8",
