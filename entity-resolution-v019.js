@@ -50,7 +50,8 @@ try{
       if(exact.length)return exact.map(x=>({x,score:1,rule:'EXACT_MOBILE'}));
     }
     rows=rows.map(x=>{
-      const cityOk=!city||norm(x.city)===norm(city);
+      const xc=norm(x.city),cc=norm(city);
+      const cityOk=!city||xc===cc||xc.includes(cc)||cc.includes(xc);
       const nameScore=Math.max(...namesOf(x).map(n=>similarity(name,n)));
       return {x,score:(cityOk?0.25:0)+nameScore*.75,rule:cityOk?'NAME_CITY':'NAME'};
     }).filter(r=>r.score>=0.54).sort((a,b)=>b.score-a.score);
@@ -142,10 +143,10 @@ try{
           if(e)e.textContent='Supplier mobile must be a valid Pakistan number, e.g. 03001234567.';
           if(card)card.classList.add('invalid');reveal(card||e);return false;
         }
-        if(candidates.length>1&&!m){
+        if(!s.canonicalEntityId&&candidates.length&&!m&&(candidates.length>1||candidates[0].score>=0.68)){
           const e=document.querySelector('[data-err="'+key+'-'+i+'"]');
           const card=document.querySelector('[data-card="'+key+'-'+i+'"]');
-          if(e)e.textContent='Similar suppliers exist. Enter supplier mobile to identify the correct business.';
+          if(e)e.textContent='A similar existing supplier was found. Enter supplier mobile to confirm the correct business before continuing.';
           if(card)card.classList.add('invalid');reveal(card||e);return false;
         }
       }
