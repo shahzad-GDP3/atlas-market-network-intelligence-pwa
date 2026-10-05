@@ -1,8 +1,8 @@
 (()=>{
 'use strict';
 try{
-  const ER_VERSION='ER-2.2';
-  const APP_VERSION_V020='0.20.0-PWA';
+  const ER_VERSION='ER-2.3';
+  const APP_VERSION_V020='0.20.1-PWA';
   const resolutionCache=new Map();
 
   const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
@@ -44,7 +44,7 @@ try{
     if(!r)return 'Identity check runs against the live master before continuing.';
     if(r.status==='CHECKING')return 'Checking live supplier masterâ€¦';
     if(r.status==='MATCHED')return 'âœ“ Matched: '+candidateLabel(r.match)+(r.match&&r.match.verified?' Â· verified':' Â· mobile-backed');
-    if(r.status==='NEW')return 'New supplier â€” original details will be preserved for review.';
+    if(r.status==='NEW')return 'New supplier - saved for manual verification and kept off the network map until approved.';
     if(r.status==='POSSIBLE')return 'Possible existing supplier: '+candidateLabel(r.match)+'. Enter/confirm supplier mobile to identify it safely.';
     if(r.status==='AMBIGUOUS')return 'Similar suppliers found: '+(r.candidates||[]).map(candidateLabel).filter(Boolean).join(' / ')+'. Supplier mobile is required.';
     if(r.status==='CONFLICT')return 'Supplier mobile conflicts with the entered name/town. Verify the details.';
@@ -186,7 +186,7 @@ try{
           showSourceError(key,i,'Supplier mobile must be a valid Pakistan number, e.g. 03001234567.');
           return false;
         }
-        const r=await resolveRemote(s,{force:false});
+        const r=await resolveRemote(s,{force:true});
         if(r.status==='MATCHED'||r.status==='NEW')continue;
         renderBrands();
         if(r.status==='POSSIBLE')showSourceError(key,i,'A similar supplier already exists. Enter/confirm supplier mobile before continuing.');
@@ -268,7 +268,7 @@ try{
   };
 
   document.querySelectorAll('.userMeta').forEach(el=>{
-    if(el.textContent.includes('v0.18.0-PWA'))el.innerHTML=el.innerHTML.replace('v0.18.0-PWA','v0.20.0-PWA');
+    if(el.textContent.includes('v0.18.0-PWA'))el.innerHTML=el.innerHTML.replace('v0.18.0-PWA','v0.20.1-PWA');
   });
   const style=document.createElement('style');
   style.textContent='.identityHint{margin-top:8px;padding:8px 10px;border-radius:9px;background:#eef4ff;color:#344054;border:1px solid #d6e4ff;font-size:12px;line-height:1.35}.sourceCard.invalid .identityHint{background:#fff7ed;border-color:#fed7aa}';
@@ -276,6 +276,6 @@ try{
   if(state.brands&&state.brands.size)renderBrands();
   console.info('[Atlas MNI] server entity resolution',ER_VERSION,'loaded');
 }catch(err){
-  console.error('[Atlas MNI] v0.20 entity resolution enhancement failed; base app remains available.',err);
+  console.error('[Atlas MNI] v0.20.1 entity resolution enhancement failed; base app remains available.',err);
 }
 })();

@@ -20,7 +20,7 @@
     if(!r.ok)throw new Error('Base app could not be loaded.');
     let html=await r.text();
     if(!html.includes('rel="manifest"'))html=html.replace('</head>','<link rel="manifest" href="manifest.webmanifest"></head>');
-    html=html.replace('</body>','<script src="entity-resolution-v020.js?v=0200"><\/script></body>');
+    html=html.replace('</body>','<script src="entity-resolution-v020.js?v=0201"><\/script></body>');
     document.open();document.write(html);document.close();
   }catch(err){
     document.getElementById('fallback').innerHTML='<strong>Could not load latest field app.</strong><p>'+String(err.message||err)+'</p><a href="field-app-v019.html?v=0190">Open stable v0.19</a>';
