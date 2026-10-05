@@ -12,12 +12,12 @@
 <style>body{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#F4F5F8;color:#172033;display:grid;place-items:center;min-height:100vh;margin:0}.box{max-width:420px;padding:24px;text-align:center}.box a{color:#24247A;font-weight:800}</style>
 </head>
 <body>
-<div class="box"><strong>Atlas Field Market Data</strong><p>Opening the latest stable version.</p><a id="openLatest" href="field-app-v021.html?v=0210">Open field app</a></div>
+<div class="box"><strong>Atlas Field Market Data</strong><p>Opening the latest stable version.</p><a id="openLatest" href="field-app-v021.html?v=0211">Open field app</a></div>
 <script>
 (async()=>{
   try{if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()))}}catch(_){ }
   try{if('caches'in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)))}}catch(_){ }
-  location.replace('field-app-v021.html?v=0210'+location.hash);
+  location.replace('field-app-v021.html?v=0211'+location.hash);
 })();
 </script>
 </body>
