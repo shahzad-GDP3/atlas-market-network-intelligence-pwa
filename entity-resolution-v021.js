@@ -1,8 +1,8 @@
 (()=>{
 'use strict';
 try{
-  const ER_VERSION='ER-2.4';
-  const APP_VERSION_V021='0.21.0-PWA';
+  const ER_VERSION='ER-2.4.1';
+  const APP_VERSION_V021='0.21.1-PWA';
   const resolutionCache=new Map();
 
   const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
@@ -47,7 +47,8 @@ try{
     const r=s&&s._resolution;
     if(!r)return 'Identity check runs against the live master before continuing.';
     if(r.status==='CHECKING')return 'Checking live supplier master...';
-    if(r.status==='MATCHED')return 'Matched: '+candidateLabel(r.match)+(r.match&&r.match.verified?' | verified':' | mobile-backed');
+    if(r.status==='MATCHED')return 'Matched: '+candidateLabel(r.match)+(r.match&&r.match.verified?' | verified':' | pending review');
+    if(r.status==='STALE')return 'Details changed while the supplier check was running. Rechecking current values...';
     if(r.status==='NEW')return 'New supplier - saved for manual verification and kept off the network map until approved.';
     if(r.status==='POSSIBLE')return 'Possible existing supplier: '+candidateLabel(r.match)+'. Enter/confirm supplier mobile to identify it safely.';
     if(r.status==='AMBIGUOUS')return 'Similar suppliers found: '+(r.candidates||[]).map(candidateLabel).filter(Boolean).join(' / ')+'. Supplier mobile is required.';
@@ -196,6 +197,9 @@ try{
         candidates:Array.isArray(r.candidates)?r.candidates:[]
       };
       resolutionCache.set(key,clean);
+      if(resolutionKey(s)!==key){
+        return {status:'STALE',rule:'INPUT_CHANGED_DURING_CHECK',match:null,candidates:[]};
+      }
       applyResolution(s,clean,key);
       return clean;
     }catch(err){
@@ -267,6 +271,7 @@ try{
         const note=document.querySelector('[data-match-note="'+el.dataset.sbrand+'-'+el.dataset.idx+'"]');
         if(note)note.textContent='Checking live supplier master...';
         const r=await resolveRemote(src);
+        if(r.status==='STALE')return;
         if(r.status==='MATCHED'||r.status==='NEW')renderBrands();
         else if(note)note.textContent=noteText(src);
       };
@@ -320,6 +325,11 @@ try{
           return false;
         }
         const r=await resolveRemote(s,{force:true});
+        if(r.status==='STALE'){
+          renderBrands();
+          showSourceError(key,i,'Supplier details changed while checking. Tap Continue again to verify the latest values.');
+          return false;
+        }
         if(r.status==='MATCHED'||r.status==='NEW')continue;
         renderBrands();
         if(r.status==='POSSIBLE')showSourceError(key,i,'A similar supplier already exists. Enter/confirm supplier mobile before continuing.');
@@ -401,7 +411,7 @@ try{
   };
 
   document.querySelectorAll('.userMeta').forEach(el=>{
-    if(el.textContent.includes('v0.18.0-PWA'))el.innerHTML=el.innerHTML.replace('v0.18.0-PWA','v0.21.0-PWA');
+    if(el.textContent.includes('v0.18.0-PWA'))el.innerHTML=el.innerHTML.replace('v0.18.0-PWA','v0.21.1-PWA');
   });
   const style=document.createElement('style');
   style.textContent='.identityHint{margin-top:8px;padding:8px 10px;border-radius:9px;background:#eef4ff;color:#344054;border:1px solid #d6e4ff;font-size:12px;line-height:1.35}.sourceCard.invalid .identityHint{background:#fff7ed;border-color:#fed7aa}.suggestPanel{margin-top:11px;padding:10px;border:1px solid #d8deeb;border-radius:10px;background:#fff}.suggestTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px;font-weight:850;color:#25304a}.verifiedPill{font-size:9px;padding:4px 7px;border-radius:999px;background:#ecfdf3;color:#027a48;border:1px solid #abefc6}.suggestSearch{min-height:42px;margin-top:8px;font-size:13px;background:#fbfcfe}.suggestList{display:grid;gap:6px;margin-top:8px;max-height:250px;overflow:auto}.suggestItem{width:100%;text-align:left;border:1px solid #d9ddea;background:#f8f9fc;border-radius:9px;padding:9px 10px;color:#172033}.suggestItem:active{border-color:#24247a;background:#efeffb}.suggestName{display:block;font-size:12px;font-weight:900}.suggestMeta{display:block;margin-top:3px;font-size:10px;color:#667085}.suggestEmpty{font-size:10px;color:#7a8190;padding:7px 2px;line-height:1.35}.addNewSupplier{width:100%;margin-top:8px;min-height:38px;border:1px dashed #8f97aa;border-radius:8px;background:#fff;color:#24247a;font-size:11px;font-weight:850}';
